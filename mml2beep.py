@@ -238,7 +238,9 @@ class SyntaxAnalyzer:
                 self._read_char()
                 self._line += 1
                 self._col = 1
-
+            # elif self._cur_char in '.+M':
+            #     # 注释
+            #     self._read_char()
             else:
                 # 错误字符
                 raise MmlError(line, col, f'未预料到的字符"{self._cur_char}"')
@@ -432,10 +434,18 @@ def main():
 
     with open(args.mml_file) as f:
         mml = f.read()
+        mml = 'MML@'+mml.split("MML@")[1]
+        print(mml)
     res = MmlParser().parse(mml)
     with open(args.beep_file, 'w') as f:
         if args.format == 'json':
-            json.dump(res[args.track], f)
+            # json.dump(res[args.track], f)
+            f.write('gcode:\n')
+            for note in res[0]:
+                s = str(note[0])
+                p = str(note[1])
+                w = 'S'+ s+' P' + p
+                f.write('    M300 '+ w +' \n')
         elif args.format == 'cpp':
             f.write("""#include <vector>
 
